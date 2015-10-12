@@ -58,16 +58,17 @@ public class CClock {
     }
 
     private void playSound() {
-        final Clip finalClip = getClip();
+        final Clip clip = getClip();
+        assert clip != null;
+        long clipLength = clip.getMicrosecondLength()/1000;
         executorCountUp.scheduleAtFixedRate(() -> {
             try {
-                assert finalClip != null;
-                finalClip.loop(0);
-                finalClip.setFramePosition(0);
+                clip.loop(0);
+                clip.setFramePosition(0);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }, 1000*(delay-2), 1000*intervalSec, TimeUnit.MILLISECONDS); // to adjust
+        }, 1000*delay - clipLength, 1000*intervalSec, TimeUnit.MILLISECONDS); // to adjust
     }
 
     private Clip getClip() {

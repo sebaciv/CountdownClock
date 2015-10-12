@@ -9,6 +9,7 @@ public class ClockUI {
     private final JFrame settingsFrame;
     private final JFrame clockFrame;
     private final JLabel timeLabel;
+    private final int borderSize = 10;
     private CClock cClock;
 
     public ClockUI(JFrame settingsFrame, JFrame clockFrame) {
@@ -36,23 +37,24 @@ public class ClockUI {
         JLabel timeDisplay = new JLabel("00:00");
         timeDisplay.setFont(new Font("Arial", Font.PLAIN, calculateFontSize(timeDisplay)));
         timeDisplay.setHorizontalAlignment(JLabel.CENTER);
-        timeDisplay.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        timeDisplay.setBorder(BorderFactory.createEmptyBorder(borderSize, borderSize, borderSize, borderSize));
         return timeDisplay;
     }
 
     private int calculateFontSize(JLabel timeDisplay) {
         Font font = new Font("Arial", Font.PLAIN, 14);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int textWidth = timeDisplay.getFontMetrics(font).stringWidth("000:00");
-        int displayWidth = timeDisplay.getWidth();
-        double widthRatio = (double)displayWidth / (double)textWidth;
-        int newFontSize = (int)(font.getSize() * widthRatio);
-        int displayHeight = timeDisplay.getHeight();
-        return Math.min(newFontSize, displayHeight);
+        double displayWidth = screenSize.getWidth() - 2*borderSize;
+        double widthRatio = displayWidth / (double)textWidth;
+        int fontSize = (int)(font.getSize() * widthRatio);
+        int displayHeight = (int) screenSize.getHeight();
+        return Math.min(fontSize, displayHeight - 4*borderSize);
     }
 
     private void addButtonPanel() {
         JPanel buttons = new JPanel();
-        buttons.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+        buttons.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         buttons.setLayout(new BoxLayout(buttons, BoxLayout.LINE_AXIS));
         buttons.add(createBackButton());
         clockFrame.add(buttons, BorderLayout.SOUTH);
