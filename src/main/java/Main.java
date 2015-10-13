@@ -31,51 +31,7 @@ public class Main {
 
         settingsFrame.setJMenuBar(createMenuBar());
 
-        JPanel borderPanel = new JPanel();
-        borderPanel.setLayout(new BoxLayout(borderPanel,BoxLayout.PAGE_AXIS));
-        borderPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        settingsFrame.getContentPane().add(borderPanel);
-
-        JPanel settingsPanel = createSettingsPanel();
-
-        JLabel intervalLabel = new JLabel("Interval");
-        intervalLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        settingsPanel.add(intervalLabel);
-        intervalField = null;
-        try {
-            MaskFormatter formatter = new MaskFormatter("##:##");
-            formatter.setPlaceholderCharacter('0');
-            intervalField = new JFormattedTextField(formatter);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        assert intervalField != null;
-        intervalField.setValue("00:05");
-        intervalField.setFont(new Font("Arial", Font.PLAIN, 16));
-        intervalField.addPropertyChangeListener("value", new TimeFieldPropertyChangeListener());
-        settingsPanel.add(intervalField);
-
-        JLabel delayLabel = new JLabel("Delay");
-        delayLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        settingsPanel.add(delayLabel);
-        delayField = null;
-        try {
-            MaskFormatter formatter = new MaskFormatter("##:##");
-            formatter.setPlaceholderCharacter('0');
-            delayField = new JFormattedTextField(formatter);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        assert delayField != null;
-        delayField.setValue("00:05");
-        delayField.setFont(new Font("Arial", Font.PLAIN, 16));
-        delayField.addPropertyChangeListener("value",  new TimeFieldPropertyChangeListener());
-        settingsPanel.add(delayField);
-
-        borderPanel.add(settingsPanel);
-        // add appearance panel to do
-        borderPanel.add(Box.createRigidArea(new Dimension(0,5)));
-        borderPanel.add(createButtonPanel(intervalField, delayField));
+        settingsFrame.getContentPane().add(createBorderPanel());
 
         settingsFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         settingsFrame.pack();
@@ -84,15 +40,26 @@ public class Main {
         settingsFrame.setVisible(true);
     }
 
-    private JPanel createButtonPanel(JFormattedTextField intervalField, JFormattedTextField delayField) {
+    private JPanel createBorderPanel() {
+        JPanel borderPanel = new JPanel();
+        borderPanel.setLayout(new BoxLayout(borderPanel, BoxLayout.PAGE_AXIS));
+        borderPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        borderPanel.add(createSettingsPanel());
+        // add appearance panel to do
+        borderPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        borderPanel.add(createButtonPanel());
+        return borderPanel;
+    }
+
+    private JPanel createButtonPanel() {
         JPanel buttons = new JPanel();
         buttons.setLayout(new BoxLayout(buttons, BoxLayout.LINE_AXIS));
         buttons.add(Box.createHorizontalGlue());
-        buttons.add(createStartButton(intervalField, delayField));
+        buttons.add(createStartButton());
         return buttons;
     }
 
-    private JButton createStartButton(JFormattedTextField intervalField, JFormattedTextField delayField) {
+    private JButton createStartButton() {
         JButton startButton = new JButton("Start");
         startButton.setFont(new Font("Arial", Font.PLAIN, 14));
         startButton.addActionListener(new StartButtonListener());
@@ -114,13 +81,47 @@ public class Main {
 
     private JPanel createSettingsPanel() {
         JPanel settingsPanel = new JPanel();
-        settingsPanel.setLayout(new GridLayout(0,2,10,10));
-        Border loweredEtched = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
-        TitledBorder title = BorderFactory.createTitledBorder(loweredEtched, "Clock settings",
-                TitledBorder.LEFT, TitledBorder.TOP, new Font("Arial", Font.PLAIN, 12));
-        Border compound = BorderFactory.createCompoundBorder(title, BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        settingsPanel.setBorder(compound);
+        settingsPanel.setLayout(new GridLayout(0, 2, 10, 10));
+        settingsPanel.setBorder(getCompoundBorder("Clock settings"));
+
+        settingsPanel.add(getDescriptionLabel("Interval"));
+        intervalField = getInputField();
+        settingsPanel.add(intervalField);
+
+        settingsPanel.add(getDescriptionLabel("Delay"));
+        delayField = getInputField();
+        settingsPanel.add(delayField);
+
         return settingsPanel;
+    }
+
+    private Border getCompoundBorder(String titleText) {
+        Border loweredEtched = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+        TitledBorder title = BorderFactory.createTitledBorder(loweredEtched, titleText,
+                TitledBorder.LEFT, TitledBorder.TOP, new Font("Arial", Font.PLAIN, 12));
+        return BorderFactory.createCompoundBorder(title, BorderFactory.createEmptyBorder(10, 10, 10, 10));
+    }
+
+    private JLabel getDescriptionLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("Arial", Font.PLAIN, 16));
+        return label;
+    }
+
+    private JFormattedTextField getInputField() {
+        JFormattedTextField inputField = null;
+        try {
+            MaskFormatter formatter = new MaskFormatter("##:##");
+            formatter.setPlaceholderCharacter('0');
+            inputField = new JFormattedTextField(formatter);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        assert inputField != null;
+        inputField.setValue("00:05");
+        inputField.setFont(new Font("Arial", Font.PLAIN, 16));
+        inputField.addPropertyChangeListener("value", new TimeFieldPropertyChangeListener());
+        return inputField;
     }
 
     public static void main(String[] args) {
