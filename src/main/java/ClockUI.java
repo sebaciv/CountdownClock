@@ -1,3 +1,4 @@
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.awt.*;
 
@@ -8,13 +9,15 @@ import java.awt.*;
 public class ClockUI {
     private final JFrame settingsFrame;
     private final JFrame clockFrame;
+    private final Clip beepClip;
     private final JLabel timeLabel;
     private final int borderSize = 10;
     private CClock cClock;
 
-    public ClockUI(JFrame settingsFrame, JFrame clockFrame) {
+    public ClockUI(JFrame settingsFrame, JFrame clockFrame, Clip beepClip) {
         this.settingsFrame = settingsFrame;
         this.clockFrame = clockFrame;
+        this.beepClip = beepClip;
         timeLabel = createTimeDisplay();
 
         clockFrame.setLayout(new BorderLayout());
@@ -29,7 +32,7 @@ public class ClockUI {
     }
 
     public void startClock(TimeDuration interval, TimeDuration delay) {
-        cClock = new CClock(interval, delay, timeLabel);
+        cClock = new CClock(interval, delay, timeLabel, beepClip);
         cClock.startClock();
     }
 

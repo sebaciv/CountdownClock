@@ -1,7 +1,5 @@
 import javax.sound.sampled.*;
 import javax.swing.*;
-import java.io.IOException;
-import java.net.URL;
 import java.time.Instant;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -16,14 +14,16 @@ public class CClock {
     private final ScheduledExecutorService executorCountUp = Executors.newScheduledThreadPool(1);
     private final long delay;
     private final long intervalSec;
+    private final Clip beepClip;
     private Timer timerCountDown;
     private Timer timerCountUp;
     private long currentSecond;
     private long currentMinute;
     private Instant startCount;
 
-    public CClock(TimeDuration interval, TimeDuration startDelay, JLabel time) {
+    public CClock(TimeDuration interval, TimeDuration startDelay, JLabel time, Clip beepClip) {
         this.time = time;
+        this.beepClip = beepClip;
         currentMinute = startDelay.getMinutes();
         currentSecond = startDelay.getSeconds();
         intervalSec = interval.getDurationInSecond();
@@ -58,32 +58,15 @@ public class CClock {
     }
 
     private void playSound() {
-        final Clip clip = getClip();
-        assert clip != null;
-        long clipLength = clip.getMicrosecondLength()/1000;
+        long clipLength = (beepClip.getMicrosecondLength()/1000000)*1000; // to milliseconds
         executorCountUp.scheduleAtFixedRate(() -> {
             try {
-                clip.loop(0);
-                clip.setFramePosition(0);
+                beepClip.setFramePosition(0);
+                beepClip.loop(0);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }, 1000*delay - clipLength, 1000*intervalSec, TimeUnit.MILLISECONDS); // to adjust
-    }
-
-    private Clip getClip() {
-        Clip clip = null;
-        try {
-            URL url = this.getClass().getClassLoader().getResource("beep.wav");
-            AudioInputStream audioIn = AudioSystem.getAudioInputStream(url);
-            clip = AudioSystem.getClip();
-            clip.open(audioIn);
-        } catch (UnsupportedAudioFileException |
-                LineUnavailableException |
-                IOException e) {
-            e.printStackTrace();
-        }
-        return clip;
     }
 
     private void countDown() {
