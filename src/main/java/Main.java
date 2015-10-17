@@ -1,3 +1,4 @@
+import javax.sound.sampled.*;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
@@ -8,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.net.URL;
 import java.text.ParseException;
 
 /**
@@ -18,14 +21,17 @@ public class Main {
 
     private final JFrame settingsFrame;
     private final JFrame clockFrame;
+    private final Clip beepClip;
     private final ClockUI clockUI;
     private JFormattedTextField delayField;
     private JFormattedTextField intervalField;
+    private long beepLength;
 
     private Main() {
         settingsFrame = new JFrame("ClockS");
         clockFrame = new JFrame("Clock");
-        clockUI = new ClockUI(settingsFrame, clockFrame);
+        beepClip = getClip();
+        clockUI = new ClockUI(settingsFrame, clockFrame, beepClip);
 
         settingsFrame.getContentPane().setLayout(new BoxLayout(settingsFrame.getContentPane(),BoxLayout.PAGE_AXIS));
 
@@ -38,6 +44,28 @@ public class Main {
         settingsFrame.setResizable(false);
         settingsFrame.setLocationByPlatform(true);
         settingsFrame.setVisible(true);
+    }
+
+    private Clip getClip() {
+        Clip clip = null;
+        try {
+            URL url = this.getClass().getClassLoader().getResource("beep2.wav");
+            AudioInputStream audioIn = AudioSystem.getAudioInputStream(url);
+            clip = AudioSystem.getClip();
+            clip.open(audioIn);
+        } catch (UnsupportedAudioFileException |
+                LineUnavailableException |
+                IOException e) {
+            e.printStackTrace();
+        }
+        assert clip != null;
+        beepLength = getBeepLength();
+        assert beepLength < 59;
+        return clip;
+    }
+
+    private long getBeepLength() {
+        return beepClip.getMicrosecondLength()/1000000 + 1;
     }
 
     private JPanel createBorderPanel() {
@@ -118,7 +146,8 @@ public class Main {
             e.printStackTrace();
         }
         assert inputField != null;
-        inputField.setValue("00:05");
+        String s = "00:" + String.valueOf(beepLength / 10) + String.valueOf(beepLength % 10);
+        inputField.setValue(s);
         inputField.setFont(new Font("Arial", Font.PLAIN, 16));
         inputField.addPropertyChangeListener("value", new TimeFieldPropertyChangeListener());
         return inputField;
@@ -150,16 +179,16 @@ public class Main {
                 clockUI.startClock(interval, delay);
             } catch (Exception exp) {
                 JOptionPane.showMessageDialog(settingsFrame,
-                        exp.getMessage() + " must be at least 5 seconds!",
+                        exp.getMessage() + " must be at least " + beepLength + " seconds!",
                         "Input error",
                         JOptionPane.ERROR_MESSAGE);
             }
         }
 
         private void checkValues(TimeDuration interval, TimeDuration delay) {
-            if (interval.getMinutes() == 0 && interval.getSeconds() < 5) {
+            if (interval.getMinutes() == 0 && interval.getSeconds() < beepLength) {
                 throw new IllegalArgumentException("Interval");
-            } else if (delay.getMinutes() == 0 && delay.getSeconds() < 5) {
+            } else if (delay.getMinutes() == 0 && delay.getSeconds() < beepLength) {
                 throw new IllegalArgumentException("Delay");
             }
         }
