@@ -13,6 +13,7 @@ public class ClockUI {
     private final JLabel timeLabel;
     private final int borderSize = 10;
     private CClock cClock;
+    private Color fontColor = Color.BLACK;
 
     public ClockUI(JFrame settingsFrame, JFrame clockFrame, Clip beepClip) {
         this.settingsFrame = settingsFrame;
@@ -33,6 +34,7 @@ public class ClockUI {
 
     public void startClock(TimeDuration interval, TimeDuration delay) {
         cClock = new CClock(interval, delay, timeLabel, beepClip);
+        timeLabel.setForeground(fontColor);
         cClock.startClock();
     }
 
@@ -73,5 +75,9 @@ public class ClockUI {
             cClock.stopClock();
         });
         return backToSettings;
+    }
+
+    public void setFontColor(Color fontColor) {
+        this.fontColor = fontColor;
     }
 }

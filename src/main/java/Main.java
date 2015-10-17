@@ -21,7 +21,6 @@ public class Main {
 
     private final JFrame settingsFrame;
     private final JFrame clockFrame;
-    private final Clip beepClip;
     private final ClockUI clockUI;
     private JFormattedTextField delayField;
     private JFormattedTextField intervalField;
@@ -30,7 +29,7 @@ public class Main {
     private Main() {
         settingsFrame = new JFrame("ClockS");
         clockFrame = new JFrame("Clock");
-        beepClip = getClip();
+        Clip beepClip = getClip();
         clockUI = new ClockUI(settingsFrame, clockFrame, beepClip);
 
         settingsFrame.getContentPane().setLayout(new BoxLayout(settingsFrame.getContentPane(),BoxLayout.PAGE_AXIS));
@@ -59,39 +58,9 @@ public class Main {
             e.printStackTrace();
         }
         assert clip != null;
-        beepLength = getBeepLength();
+        beepLength = clip.getMicrosecondLength()/1000000 + 1;
         assert beepLength < 59;
         return clip;
-    }
-
-    private long getBeepLength() {
-        return beepClip.getMicrosecondLength()/1000000 + 1;
-    }
-
-    private JPanel createBorderPanel() {
-        JPanel borderPanel = new JPanel();
-        borderPanel.setLayout(new BoxLayout(borderPanel, BoxLayout.PAGE_AXIS));
-        borderPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        borderPanel.add(createSettingsPanel());
-        // add appearance panel to do
-        borderPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        borderPanel.add(createButtonPanel());
-        return borderPanel;
-    }
-
-    private JPanel createButtonPanel() {
-        JPanel buttons = new JPanel();
-        buttons.setLayout(new BoxLayout(buttons, BoxLayout.LINE_AXIS));
-        buttons.add(Box.createHorizontalGlue());
-        buttons.add(createStartButton());
-        return buttons;
-    }
-
-    private JButton createStartButton() {
-        JButton startButton = new JButton("Start");
-        startButton.setFont(new Font("Arial", Font.PLAIN, 14));
-        startButton.addActionListener(new StartButtonListener());
-        return startButton;
     }
 
     private JMenuBar createMenuBar() {
@@ -105,6 +74,18 @@ public class Main {
         aboutMenu.add(about);
         menuBar.add(aboutMenu);
         return menuBar;
+    }
+
+    private JPanel createBorderPanel() {
+        JPanel borderPanel = new JPanel();
+        borderPanel.setLayout(new BoxLayout(borderPanel, BoxLayout.PAGE_AXIS));
+        borderPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        borderPanel.add(createSettingsPanel());
+        // add appearance panel to do
+        // borderPanel.add(createAppearancePanel());
+        borderPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        borderPanel.add(createButtonPanel());
+        return borderPanel;
     }
 
     private JPanel createSettingsPanel() {
@@ -151,6 +132,42 @@ public class Main {
         inputField.setFont(new Font("Arial", Font.PLAIN, 16));
         inputField.addPropertyChangeListener("value", new TimeFieldPropertyChangeListener());
         return inputField;
+    }
+
+    private JPanel createAppearancePanel() {
+        JPanel appearancePanel = new JPanel();
+        appearancePanel.setLayout(new GridLayout(0, 2, 10, 10));
+        appearancePanel.setBorder(getCompoundBorder("Appearance"));
+        appearancePanel.add(getDescriptionLabel("Font color"));
+        appearancePanel.add(createColorChooserButton("Choose font color"));
+        return appearancePanel;
+    }
+
+    private JButton createColorChooserButton(String text) {
+        JButton chooser = new JButton("Choose...");
+        chooser.addActionListener(e -> {
+            Color newColor = JColorChooser.showDialog(
+                    settingsFrame,
+                    text,
+                    Color.BLACK);
+            clockUI.setFontColor(newColor);
+        });
+        return chooser;
+    }
+
+    private JPanel createButtonPanel() {
+        JPanel buttons = new JPanel();
+        buttons.setLayout(new BoxLayout(buttons, BoxLayout.LINE_AXIS));
+        buttons.add(Box.createHorizontalGlue());
+        buttons.add(createStartButton());
+        return buttons;
+    }
+
+    private JButton createStartButton() {
+        JButton startButton = new JButton("Start");
+        startButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        startButton.addActionListener(new StartButtonListener());
+        return startButton;
     }
 
     public static void main(String[] args) {
